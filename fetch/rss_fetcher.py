@@ -18,9 +18,8 @@ def fetch_rss_feed(url):
         if not author and "authors" in entry and len(entry.authors) > 0:
             author = entry.authors[0].get("name", "")
 
-        # Fetch full HTML and convert to plain text
-        full_html = fetch_full_article_text(link, return_html=True)
-        content = BeautifulSoup(full_html, "html.parser").get_text(separator="\n").strip()
+        
+        content = fetch_full_article_text(link)
 
         articles.append({
             "title": title,
