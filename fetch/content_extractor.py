@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import re
 
 def fetch_full_article_text(url, return_html=False):
     try:
@@ -19,27 +20,31 @@ def fetch_full_article_text(url, return_html=False):
         if return_html:
             return str(soup)
 
+        # Prefer <article>, fallback to all <p>
         article_tag = soup.find("article")
-        if article_tag:
-            paragraphs = article_tag.find_all("p")
-        else:
-            paragraphs = soup.find_all("p")
+        elements = article_tag.find_all(["h1", "h2", "h3", "p"]) if article_tag else soup.find_all(["h1", "h2", "h3", "p"])
 
-        clean_paragraphs = []
-        for p in paragraphs:
-            text = p.get_text(strip=True)
+        clean_parts = []
+        for el in elements:
+            text = el.get_text(strip=True)
 
-            # Stop collecting if footer/junk starts appearing
+            # Stop if footer/junk text appears
             if any(footer_phrase in text for footer_phrase in [
-                "JavaScript", "Substack", "turn on JavaScript", "©", "Get the app"
+                "JavaScript", "Substack", "turn on JavaScript", "Get the app"
             ]):
                 break
 
-            # Skip empty or extremely short paragraphs
-            if len(text) > 20:
-                clean_paragraphs.append(text)
+            if text:
+                if el.name in ["h1", "h2", "h3"]:
+                    clean_parts.append(f"\n{text.upper()}\n")  # Emphasize headings
+                else:
+                    clean_parts.append(text)
 
-        full_text = "\n".join(clean_paragraphs)
+        # Join and remove excessive spaces/newlines
+        full_text = "\n".join(clean_parts)
+        full_text = re.sub(r'\n\s*\n+', '\n\n', full_text)  # collapse multiple blank lines
+        full_text = re.sub(r'[ \t]+', ' ', full_text)       # collapse extra spaces
+
         return full_text.strip()
 
     except Exception as e:
