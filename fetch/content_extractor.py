@@ -48,5 +48,5 @@ def fetch_full_article_text(url, return_html=False):
         return full_text.strip()
 
     except Exception as e:
-        print(f"⚠️ Error fetching full article from {url}: {e}")
+        print(f"Error fetching full article from {url}: {e}")
         return ""

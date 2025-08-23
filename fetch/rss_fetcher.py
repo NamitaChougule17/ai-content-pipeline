@@ -1,35 +1,58 @@
 import feedparser
-from bs4 import BeautifulSoup
-from dateutil import parser
-from datetime import datetime, timezone
 from fetch.content_extractor import fetch_full_article_text
+from fetch.fields_fetcher import compute_source_other, pretty_date_from_entry
 
 
-def fetch_rss_feed(url):
+def fetch_rss_feed(url: str):
     feed = feedparser.parse(url)
     articles = []
 
+    # Try to read a nice site/newsletter name from the feed
+    feed_title = None
+    try:
+        feed_title = feed.feed.get("title")
+    except Exception:
+        pass
+
     for entry in feed.entries:
-        title = entry.get("title")
-        link = entry.get("link")
-        published = parser.parse(entry.get("published", "")) if entry.get("published") else None
+        short_title = (entry.get("title") or "").strip()
+        link = (entry.get("link") or "").strip()
 
-        author = entry.get("author", "")
-        if not author and "authors" in entry and len(entry.authors) > 0:
-            author = entry.authors[0].get("name", "")
+        # Collect all authors if present
+        author = ""
+        try:
+            if hasattr(entry, "authors") and entry.authors:
+                names = []
+                for a in entry.authors:
+                    name = a.get("name") if isinstance(a, dict) else getattr(a, "name", None)
+                    if name:
+                        names.append(name.strip())
+                # fallback to single author field if authors list empty after filtering
+                author = ", ".join([n for n in names if n]) or entry.get("author", "")
+            else:
+                author = entry.get("author", "")
+        except Exception:
+            author = entry.get("author", "")
 
-        
+        # Friendly display date, if the feed provides one
+        date_display = pretty_date_from_entry(
+            entry.get("published") or entry.get("updated")
+        )
+
+        # Fetch full, cleaned article content
         content = fetch_full_article_text(link)
 
         articles.append({
-            "title": title,
+            "short_title": short_title,
             "url": link,
-            "content": content,
+            "source": "Other",                                 # per your requirement
+            "source_other": compute_source_other(feed_title, link),
             "author": author,
-            "published": published,
-            "summary": None,
-            "category": None,
-            "fetched_at": datetime.now(timezone.utc)
+            "content": content,
+            "summary": None,                                   # filled later by summarizer
+            "category": None,                                  # filled later by categorizer
+            "more_than_1": 0,                                  # per your requirement
+            "date": date_display,                              # string like "August 03, 2025"
         })
 
     return articles

@@ -1,4 +1,4 @@
-from transformers import PegasusTokenizer, PegasusForConditionalGeneration
+from transformers import PegasusTokenizer, PegasusForConditionalGeneration 
 import mysql.connector
 import re
 from config.db_config import DB_CONFIG
@@ -41,13 +41,13 @@ def summarize_text(text, tokenizer, model):
         )
         chunk_summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
 
-        # ✅ Clean Pegasus special tokens like <n>
+        #  Clean Pegasus special tokens like <n>
         chunk_summary = chunk_summary.replace("<n>", " ").strip()
 
-        # ✅ Fix missing spaces between lowercase-uppercase 
+        #  Fix missing spaces between lowercase-uppercase 
         chunk_summary = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', chunk_summary)
 
-        # ✅ Fix missing spaces between letters & numbers
+        #  Fix missing spaces between letters & numbers
         chunk_summary = re.sub(r'([a-zA-Z])([0-9])', r'\1 \2', chunk_summary)
         chunk_summary = re.sub(r'([0-9])([a-zA-Z])', r'\1 \2', chunk_summary)
 
@@ -74,12 +74,12 @@ def summarize_and_store_all_articles():
         articles = get_articles_to_summarize(conn)
         for article_id, content in articles:
             try:
-                print(f"📝 Summarizing article ID: {article_id}...")
+                print(f" Summarizing article ID: {article_id}...")
                 summary = summarize_text(content, tokenizer, model)
                 update_summary(conn, article_id, summary)
-                print(f"✅ Summary saved for article ID {article_id}")
+                print(f" Summary saved for article ID {article_id}")
             except Exception as e:
-                print(f"❌ Failed to summarize ID {article_id}: {e}")
+                print(f" Failed to summarize ID {article_id}: {e}")
     finally:
         conn.close()
 
