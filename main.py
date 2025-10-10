@@ -1,17 +1,28 @@
 from db.feed_repository import get_all_active_feeds
 from fetch.rss_fetcher import fetch_rss_feed
 from db.article_repository import insert_article
+from summarize.summarize_articles import summarize_and_store_all_articles
 
 def fetch_and_store_all():
-    feed_urls = get_all_active_feeds()
-    for url in feed_urls:
+    feeds = get_all_active_feeds()  # [(url, source_name, source_category)]
+    for url, source_name, source_category in feeds:
         try:
             articles = fetch_rss_feed(url)
             for article in articles:
+                # override the per-article category with the feed's source_category
+                article["category"] = source_category 
                 insert_article(article)
         except Exception as e:
             print(f" Error fetching from {url}: {e}")
 
-if __name__ == "__main__":
+def main():
+    # 1) Fetch & store fresh articles
     fetch_and_store_all()
+
+    # 2) Summarize any articles that still need summaries
+    print("\n--- Summarizing newly fetched articles ---")
+    summarize_and_store_all_articles()
+
+if __name__ == "__main__":
+    main()
 
