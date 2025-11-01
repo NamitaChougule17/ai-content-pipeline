@@ -21,7 +21,7 @@ def build_payload(row):
     summary = clean(row.get("summary"))
     url = clean(row.get("url"))
     source = clean(row.get("source") or "Other")
-    source_other = clean(row.get("source_other")) or "Unknown"
+    #source_other = clean(row.get("source_other")) or "Unknown"
     author = clean(row.get("author"))
     date_val = clean(row.get("date"))
     more_than_1 = bool(row.get("more_than_1"))
@@ -30,11 +30,11 @@ def build_payload(row):
         "title": title,  # WordPress main title will be your short title
         "status": POST_STATUS,
         "acf": {
-            "news_type": source,        # corresponds to "Item Type" dropdown
+            #"news_type": source,        # corresponds to "Item Type" dropdown
             "short_title": title,       # ACF field for short title
             "url": url,
             "source": source,
-            "source_other": source_other,
+            #"source_other": source_other,
             "author": author,
             "more_than_1": more_than_1,
             "date": date_val,
@@ -45,7 +45,7 @@ def build_payload(row):
 
 def fetch_pending_articles(conn):
     query = """
-        SELECT id, short_title, url, source, source_other, author,
+        SELECT id, short_title, url, source, author,
                summary, category, more_than_1, date, hub
         FROM articles
         WHERE (summary IS NOT NULL AND summary <> '')
