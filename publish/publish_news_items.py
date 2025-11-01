@@ -67,8 +67,8 @@ def update_article(conn, article_id, wp_id, wp_url, wp_status):
         """
         UPDATE articles
         SET wp_news_item_id=%s,
-            news_item_url=%s,
-            news_item_status=%s
+            wp_news_item_url=%s,
+            wp_news_item_status=%s
         WHERE Id=%s
         """,
         (wp_id, wp_url, wp_status, article_id),
