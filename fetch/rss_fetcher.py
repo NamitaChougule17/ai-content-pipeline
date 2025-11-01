@@ -52,7 +52,8 @@ def fetch_rss_feed(url: str):
             "summary": None,                                   # filled later by summarizer
             "category": None,                                  # filled later by categorizer
             "more_than_1": 0,                                  # per your requirement
-            "date": date_display,                              # string like "August 03, 2025"
+            "date": date_display, 
+            "hub" : None                                                          # string like "August 03, 2025"
         })
 
     return articles

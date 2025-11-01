@@ -15,9 +15,9 @@ def insert_article(article: dict):
         query = """
         INSERT INTO articles
           (short_title, url, source, source_other, author, content,
-           summary, category, more_than_1, date)
+           summary, category, more_than_1, date, hub)
         VALUES
-          (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+          (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
 
         cursor.execute(
@@ -33,6 +33,7 @@ def insert_article(article: dict):
                 article.get("category"),
                 int(article.get("more_than_1", 0)),              # TINYINT
                 article.get("date"),                              # pretty string e.g. "August 03, 2025"
+                article.get("hub")
             ),
         )
 

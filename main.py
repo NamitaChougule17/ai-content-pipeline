@@ -5,12 +5,13 @@ from summarize.summarize_articles import summarize_and_store_all_articles
 
 def fetch_and_store_all():
     feeds = get_all_active_feeds()  # [(url, source_name, source_category)]
-    for url, source_name, source_category in feeds:
+    for url, source_name, source_category, hub in feeds:
         try:
             articles = fetch_rss_feed(url)
             for article in articles:
                 # override the per-article category with the feed's source_category
                 article["category"] = source_category 
+                article["hub"] = hub
                 insert_article(article)
         except Exception as e:
             print(f" Error fetching from {url}: {e}")

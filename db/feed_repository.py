@@ -7,7 +7,7 @@ def get_all_active_feeds():
         conn = mysql.connector.connect(**DB_CONFIG)
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT feed_url, source_name, source_category
+            SELECT feed_url, source_name, source_category, hub
             FROM rss_feeds
             WHERE active = TRUE
         """)
