@@ -82,7 +82,7 @@ def publish_to_hub(row):
     base_url = f"https://{hub}"
 
     payload = build_payload(row)
-    print(f" Posting article {row['Id']} to {base_url}...")
+    print(f" Posting article {row['id']} to {base_url}...")
 
     resp = requests.post(
         f"{base_url}/wp-json/wp/v2/{REST_BASE}",
@@ -110,10 +110,10 @@ def main():
                 wp_id = result.get("id")
                 wp_url = result.get("link", "")
                 wp_status = result.get("status", POST_STATUS)
-                update_article(conn, row["Id"], wp_id, wp_url, wp_status)
-                print(f"Article {row['Id']} → {row['hub']} → WP #{wp_id} ({wp_status})")
+                update_article(conn, row["id"], wp_id, wp_url, wp_status)
+                print(f"Article {row['id']} → {row['hub']} → WP #{wp_id} ({wp_status})")
             except Exception as e:
-                print(f"Failed article {row['Id']} ({row['hub']}): {e}")
+                print(f"Failed article {row['id']} ({row['hub']}): {e}")
     finally:
         conn.close()
 
