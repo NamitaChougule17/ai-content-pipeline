@@ -7,7 +7,6 @@ def fetch_rss_feed(url: str):
     feed = feedparser.parse(url)
     articles = []
 
-    # Try to read a nice site/newsletter name from the feed
     feed_title = None
     try:
         feed_title = feed.feed.get("title")
