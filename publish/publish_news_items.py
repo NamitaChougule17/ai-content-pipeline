@@ -64,11 +64,11 @@ def build_payload(row):
     """
 
     # Main fields
-    item_type = "Article"
+    #item_type = "Article"
     title = clean(row.get("short_title") or "Untitled")
     summary = clean(row.get("summary"))
     url = clean(row.get("url"))
-    source = clean(row.get("source") or "Other")
+    #source = clean(row.get("source") or "Other")
     source_other = clean(row.get("source_other"))
     author = clean(row.get("author"))
     date_val = clean(row.get("date"))
@@ -80,10 +80,10 @@ def build_payload(row):
         "status": POST_STATUS,
 
         "acf": {
-            "news_type": item_type,      # ACF item type
+            #"news_type": item_type,      # ACF item type
             "short_title": title,
             "url": url,
-            "source": source,
+            #"source": source,
             "source_other": source_other,
             "author": author,
             "more_than_1": more_than_1,
