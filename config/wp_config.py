@@ -5,4 +5,4 @@ WP_DEFAULT_PASS = "Mason*2025"
 
 REST_BASE = "news_item"
 POST_STATUS = "publish"
-BATCH_LIMIT = 5
+BATCH_LIMIT = 10
