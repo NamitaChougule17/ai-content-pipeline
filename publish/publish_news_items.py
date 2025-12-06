@@ -114,7 +114,7 @@ def insert_article_push(conn, row, wp_response):
     """
     Insert the publish result into article_push.
     """
-    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
     query = """
         INSERT INTO article_push (
