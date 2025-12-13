@@ -83,7 +83,7 @@ def build_payload(row):
             #"news_type": item_type,      # ACF item type
             "short_title": title,
             "url": url,
-            #"source": source,
+            "source": source,
             "source_other": source_other,
             "author": author,
             "more_than_1": more_than_1,
