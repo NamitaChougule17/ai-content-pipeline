@@ -1,0 +1,126 @@
+import requests
+import mysql.connector
+from datetime import datetime
+from requests.auth import HTTPBasicAuth
+
+from config.db_config import DB_CONFIG
+from config.wp_config import WP_DEFAULT_USER, WP_DEFAULT_PASS
+
+
+def get_db_connection():
+    return mysql.connector.connect(**DB_CONFIG)
+
+
+def get_unpushed_news_items(conn):
+    """
+    Fetch article_push rows where:
+      - wp_news_item_id exists
+      - has NOT yet been pushed anywhere
+    """
+
+    query = """
+        SELECT
+            ap.id AS push_id,
+            ap.wp_news_item_id,
+            h.hub_name
+        FROM article_push ap
+        JOIN hubs h ON h.id = ap.hub_id
+        WHERE ap.wp_news_item_id IS NOT NULL
+          AND ap.pushed_post_id IS NULL
+        ORDER BY ap.id ASC
+    """
+
+    cur = conn.cursor(dictionary=True)
+    cur.execute(query)
+    rows = cur.fetchall()
+    cur.close()
+    return rows
+
+
+def push_news_to_featured_post(hub_name, wp_news_item_id):
+    """
+    Calls Todd's endpoint:
+      /wp-json/onair/v2/news_to_news_post?news_id=<news_id>
+
+    WordPress automatically selects the first post
+    in the 0-featured-posts category.
+    """
+
+    base = f"https://{hub_name}/wp-json/onair/v2"
+    auth = HTTPBasicAuth(WP_DEFAULT_USER, WP_DEFAULT_PASS)
+
+    url = f"{base}/news_to_news_post?news_id={wp_news_item_id}"
+
+    print(f"[DEBUG] PUT {url}")
+
+    try:
+        resp = requests.put(url, auth=auth, timeout=20)
+    except Exception as e:
+        return "failed", f"Request error: {e}"
+
+    if resp.status_code in (200, 201):
+        return "ok", url
+
+    return "failed", resp.text[:300]
+
+
+def update_push_record_success(conn, push_id):
+    """
+    Update DB ONLY on success.
+    We do not store pushed_post_id because WP chose it.
+    """
+
+    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+    query = """
+        UPDATE article_push
+        SET
+            pushed_post_status = 'success',
+            pushed_to_post_at = %s
+        WHERE id = %s
+    """
+
+    cur = conn.cursor()
+    cur.execute(query, (now, push_id))
+    conn.commit()
+    cur.close()
+
+
+def main():
+    conn = get_db_connection()
+
+    try:
+        rows = get_unpushed_news_items(conn)
+        if not rows:
+            print("No pending news items to push.")
+            return
+
+        print(f"Found {len(rows)} news item(s) to push to featured posts...")
+
+        for row in rows:
+            push_id = row["push_id"]
+            hub_name = row["hub_name"]
+            news_item_id = row["wp_news_item_id"]
+
+            print(
+                f"[INFO] push_id={push_id}: pushing news_item={news_item_id} "
+                f"to FIRST featured post on {hub_name}"
+            )
+
+            status, detail = push_news_to_featured_post(
+                hub_name, news_item_id
+            )
+
+            if status == "ok":
+                update_push_record_success(conn, push_id)
+                print(f"[OK] push_id={push_id} pushed successfully → {detail}")
+            else:
+                print(f"[FAIL] push_id={push_id} failed → {detail}")
+                print("[INFO] DB not updated; will retry next run.")
+
+    finally:
+        conn.close()
+
+
+if __name__ == "__main__":
+    main()
