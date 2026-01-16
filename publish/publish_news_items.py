@@ -14,6 +14,9 @@ from config.wp_config import (
     POST_STATUS,
     BATCH_LIMIT,
 )
+from publish.push_news_items_to_featured_posts import (
+    push_pending_news_items_to_featured_posts
+)
 
 
 def clean(text):
@@ -171,6 +174,9 @@ def main():
 
             except Exception as e:
                 print(f"Failed to publish article {aid} to {hub}: {e}")
+
+        print("\n[INFO] Publishing complete. Pushing news items to featured posts...")
+        push_pending_news_items_to_featured_posts()
 
     finally:
         conn.close()
