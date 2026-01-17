@@ -85,7 +85,7 @@ def update_push_record_success(conn, push_id: int, wp_post_id: int):
     Only update DB when the push succeeds.
     We store:
       - pushed_post_id     = wp_post_id (WordPress post ID)
-      - pushed_post_status = 'success'
+      - pushed_post_status = 1
       - pushed_to_post_at  = timestamp
     """
 
@@ -95,7 +95,7 @@ def update_push_record_success(conn, push_id: int, wp_post_id: int):
         UPDATE article_push
         SET
             pushed_post_id = %s,
-            pushed_post_status = 'success',
+            pushed_post_status = 1,
             pushed_to_post_at = %s
         WHERE id = %s
     """
